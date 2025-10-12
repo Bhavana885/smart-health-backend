@@ -1,7 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Razorpay = require('razorpay');
-require('dotenv').config();
+const Razorpay = require("razorpay");
 
 // Initialize Razorpay instance
 const razorpay = new Razorpay({
@@ -38,6 +37,7 @@ router.post('/order', async (req, res) => {
       });
     }
 
+    // Mandatory change: return `success` and `order` object
     res.status(200).json({
       success: true,
       order: {
@@ -46,6 +46,7 @@ router.post('/order', async (req, res) => {
         amount: order.amount,
       }
     });
+
   } catch (error) {
     console.error("Razorpay order creation error:", error);
     res.status(500).json({
@@ -56,3 +57,4 @@ router.post('/order', async (req, res) => {
 });
 
 module.exports = router;
+
