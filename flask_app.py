@@ -5,10 +5,11 @@ import numpy as np
 import os
 
 app = Flask(__name__)
-# Allow your deployed frontend
+
+# ✅ Allow requests from your frontend
 CORS(app, origins=["https://smart-health-frontend.onrender.com"])
 
-# Load models
+# ✅ Load trained models and scaler
 with open("diabetes_model.pkl", "rb") as f:
     diabetes_model = pickle.load(f)
 with open("heart_model.pkl", "rb") as f:
@@ -18,33 +19,40 @@ with open("hypertension_model.pkl", "rb") as f:
 with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 
-# Route must match frontend fetch
 @app.route("/ai-prediction", methods=["POST"])
 def predict():
     try:
         data = request.get_json()
+        
+        # Required fields for prediction
         required_fields = [
             "age", "gender", "bmi", "glucose", "cholesterol",
             "systolic_bp", "diastolic_bp", "smoking", "physical_activity"
         ]
+
+        # Validate input
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing input fields"}), 400
 
+        # Prepare input array for models
         features = np.array([[data[field] for field in required_fields]])
         scaled_features = scaler.transform(features)
 
+        # Predict risk for each disease
         diabetes_risk = float(diabetes_model.predict(scaled_features)[0])
         heart_risk = float(heart_model.predict(scaled_features)[0])
         hypertension_risk = float(hypertension_model.predict(scaled_features)[0])
 
+        # Construct response
         result = {
             "prediction": {
                 "diabetes": round(diabetes_risk, 2),
                 "heart": round(heart_risk, 2),
                 "hypertension": round(hypertension_risk, 2)
             },
-            "history": []  # optional
+            "history": []  # Optional: you can populate if you store previous predictions
         }
+
         return jsonify(result)
 
     except Exception as e:
