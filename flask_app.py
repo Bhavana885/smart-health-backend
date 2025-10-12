@@ -5,7 +5,8 @@ import numpy as np
 import os
 
 app = Flask(__name__)
-CORS(app, origins=["https://smart-health-frontend.onrender.com"])  # frontend URL
+# Allow your deployed frontend
+CORS(app, origins=["https://smart-health-frontend.onrender.com"])
 
 # Load models
 with open("diabetes_model.pkl", "rb") as f:
@@ -17,6 +18,7 @@ with open("hypertension_model.pkl", "rb") as f:
 with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 
+# Route must match frontend fetch
 @app.route("/ai-prediction", methods=["POST"])
 def predict():
     try:
