@@ -6,16 +6,16 @@ import os
 
 app = Flask(__name__)
 
-# ✅ Allow requests from frontend and localhost for testing
+#Allow requests from frontend and localhost for testing
 CORS(app, origins=[
     "https://smart-health-frontend.onrender.com",  # production frontend
     "http://localhost:5173"                        # local dev frontend
 ])
 
-# ✅ Base directory (where this script is located)
+#Base directory (where this script is located)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ✅ Load trained models and scaler with absolute paths
+#Load trained models and scaler with absolute paths
 def load_model(filename):
     path = os.path.join(BASE_DIR, filename)
     if not os.path.exists(path):
@@ -28,9 +28,9 @@ try:
     heart_model = load_model("heart_model.pkl")
     hypertension_model = load_model("hypertension_model.pkl")
     scaler = load_model("scaler.pkl")
-    print("✅ All models loaded successfully.")
+    print("All models loaded successfully.")
 except Exception as e:
-    print("❌ Error loading models:", e)
+    print("Error loading models:", e)
     raise e  # Stop app if models are missing
 
 @app.route("/ai-prediction", methods=["POST"])
