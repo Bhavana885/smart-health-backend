@@ -14,7 +14,7 @@ app.use(express.json());
 // Enable CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend URL
+    origin: "https://smart-health-frontend.onrender.com", // frontend URL
     credentials: true,
   })
 );
