@@ -6,25 +6,31 @@ import os
 
 app = Flask(__name__)
 
-# ✅ Allow requests from your frontend
-CORS(app, origins=["https://smart-health-frontend.onrender.com"])
+# ✅ Allow requests from frontend and localhost for testing
+CORS(app, origins=[
+    "https://smart-health-frontend.onrender.com",  # production frontend
+    "http://localhost:5173"                        # local dev frontend
+])
 
 # ✅ Load trained models and scaler
-with open("diabetes_model.pkl", "rb") as f:
-    diabetes_model = pickle.load(f)
-with open("heart_model.pkl", "rb") as f:
-    heart_model = pickle.load(f)
-with open("hypertension_model.pkl", "rb") as f:
-    hypertension_model = pickle.load(f)
-with open("scaler.pkl", "rb") as f:
-    scaler = pickle.load(f)
+try:
+    with open("diabetes_model.pkl", "rb") as f:
+        diabetes_model = pickle.load(f)
+    with open("heart_model.pkl", "rb") as f:
+        heart_model = pickle.load(f)
+    with open("hypertension_model.pkl", "rb") as f:
+        hypertension_model = pickle.load(f)
+    with open("scaler.pkl", "rb") as f:
+        scaler = pickle.load(f)
+except Exception as e:
+    print("Error loading models:", e)
+    raise e  # stop app if models are missing
 
 @app.route("/ai-prediction", methods=["POST"])
 def predict():
     try:
         data = request.get_json()
         
-        # Required fields for prediction
         required_fields = [
             "age", "gender", "bmi", "glucose", "cholesterol",
             "systolic_bp", "diastolic_bp", "smoking", "physical_activity"
@@ -34,23 +40,22 @@ def predict():
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing input fields"}), 400
 
-        # Prepare input array for models
+        # Prepare input array
         features = np.array([[data[field] for field in required_fields]])
         scaled_features = scaler.transform(features)
 
-        # Predict risk for each disease
+        # Predict
         diabetes_risk = float(diabetes_model.predict(scaled_features)[0])
         heart_risk = float(heart_model.predict(scaled_features)[0])
         hypertension_risk = float(hypertension_model.predict(scaled_features)[0])
 
-        # Construct response
         result = {
             "prediction": {
                 "diabetes": round(diabetes_risk, 2),
                 "heart": round(heart_risk, 2),
                 "hypertension": round(hypertension_risk, 2)
             },
-            "history": []  # Optional: you can populate if you store previous predictions
+            "history": []  # Optional
         }
 
         return jsonify(result)
