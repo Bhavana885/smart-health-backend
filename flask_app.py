@@ -12,19 +12,26 @@ CORS(app, origins=[
     "http://localhost:5173"                        # local dev frontend
 ])
 
-# ✅ Load trained models and scaler
+# ✅ Base directory (where this script is located)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ✅ Load trained models and scaler with absolute paths
+def load_model(filename):
+    path = os.path.join(BASE_DIR, filename)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Model file not found: {path}")
+    with open(path, "rb") as f:
+        return pickle.load(f)
+
 try:
-    with open("diabetes_model.pkl", "rb") as f:
-        diabetes_model = pickle.load(f)
-    with open("heart_model.pkl", "rb") as f:
-        heart_model = pickle.load(f)
-    with open("hypertension_model.pkl", "rb") as f:
-        hypertension_model = pickle.load(f)
-    with open("scaler.pkl", "rb") as f:
-        scaler = pickle.load(f)
+    diabetes_model = load_model("diabetes_model.pkl")
+    heart_model = load_model("heart_model.pkl")
+    hypertension_model = load_model("hypertension_model.pkl")
+    scaler = load_model("scaler.pkl")
+    print("✅ All models loaded successfully.")
 except Exception as e:
-    print("Error loading models:", e)
-    raise e  # stop app if models are missing
+    print("❌ Error loading models:", e)
+    raise e  # Stop app if models are missing
 
 @app.route("/ai-prediction", methods=["POST"])
 def predict():
